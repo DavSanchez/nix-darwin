@@ -47,5 +47,16 @@
     assertLine 'unmanaged before'
     assertLine '# END Nix-managed'
     assertLine 'unmanaged after'
+
+    # A file with no managed block must be left completely untouched.
+    printf '%s\n' 'only unmanaged' > "$hostsPath"
+    inodeBefore=$(stat -f %i "$hostsPath" 2>/dev/null || stat -c %i "$hostsPath")
+    bash "$tmpDir/hosts-activate"
+    inodeAfter=$(stat -f %i "$hostsPath" 2>/dev/null || stat -c %i "$hostsPath")
+    assertLine 'only unmanaged'
+    if [[ "$inodeBefore" != "$inodeAfter" ]]; then
+      printf 'FAIL: unmanaged hosts file was rewritten\n' >&2
+      exit 1
+    fi
   '';
 }

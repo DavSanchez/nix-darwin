@@ -43,5 +43,14 @@
     assertLine '192.168.1.1 myhost.local myhost'
     assertLine '10.0.0.1 gateway.local'
     assertLine '172.16.0.1 docker-host'
+
+    # Re-running activation must be idempotent.
+    cp "$hostsPath" "$tmpDir/hosts.before"
+    bash "$tmpDir/hosts-activate"
+    if ! cmp -s "$hostsPath" "$tmpDir/hosts.before"; then
+      printf 'FAIL: activation is not idempotent\n' >&2
+      diff -u "$tmpDir/hosts.before" "$hostsPath" >&2 || true
+      exit 1
+    fi
   '';
 }
