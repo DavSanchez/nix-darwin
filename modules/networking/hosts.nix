@@ -151,6 +151,19 @@ in
           ' /etc/hosts)"
         fi
 
+        # Replace /etc/hosts atomically: build the new file next to it and
+        # rename it into place, so an interrupted write cannot truncate it.
+        writeHosts() {
+          local tmp
+          tmp="$(mktemp /etc/hosts.nix.XXXXXX)"
+          cat > "$tmp"
+          chmod 0644 "$tmp"
+          if [[ "$(id -u)" -eq 0 ]]; then
+            chown root:wheel "$tmp"
+          fi
+          mv -f "$tmp" /etc/hosts
+        }
+
         ${
           if config.networking.enableHosts && hasHostsContent then
             ''
@@ -161,7 +174,7 @@ in
                 printf '# BEGIN Nix-managed\n'
                 cat ${generatedHosts}
                 printf '# END Nix-managed\n'
-              } > /etc/hosts
+              } | writeHosts
             ''
           else
             ''
@@ -171,9 +184,9 @@ in
                 hostsRaw="$(< /etc/hosts)"
                 if [[ "$hostsOriginal" != "$hostsRaw" ]]; then
                   if [[ -n "$hostsOriginal" ]]; then
-                    printf '%s\n' "$hostsOriginal" > /etc/hosts
+                    printf '%s\n' "$hostsOriginal" | writeHosts
                   else
-                    : > /etc/hosts
+                    writeHosts < /dev/null
                   fi
                 fi
               fi
