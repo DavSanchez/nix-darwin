@@ -107,6 +107,14 @@ in
           `networking.extraHosts` if you really want to add such a mapping.
         '';
       }
+      {
+        assertion = !(config.networking.enableHosts && config.environment.etc ? "hosts");
+        message = ''
+          `networking.enableHosts` writes {file}`/etc/hosts` as a regular file,
+          which conflicts with `environment.etc."hosts"` (a symlink into the
+          Nix store). Use one or the other.
+        '';
+      }
     ];
 
     system.activationScripts.postActivation.text =
