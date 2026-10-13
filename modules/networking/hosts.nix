@@ -117,7 +117,7 @@ in
       }
     ];
 
-    system.activationScripts.postActivation.text =
+    system.activationScripts.postActivation.text = mkAfter (
       let
         hasHostsContent =
           config.networking.hosts != { }
@@ -175,6 +175,7 @@ in
               fi
             ''
         }
-      '';
+      ''
+    );
   };
 }
