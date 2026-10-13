@@ -84,7 +84,7 @@ in
       hostFiles = mkOption {
         type = types.listOf types.path;
         default = [ ];
-        example = literalExpression "[ pkgs.stevenblack-blocklist.ads ]";
+        example = literalExpression ''[ "''${pkgs.my-blocklist-package}/share/my-blocklist/hosts" ]'';
         description = ''
           List of files that should be concatenated into
           {file}`/etc/hosts` after the generated entries.
