@@ -165,12 +165,16 @@ in
             ''
           else
             ''
-              # Rewrite even an empty result so stale managed blocks disappear.
+              # Only rewrite when a stale managed block was actually removed,
+              # so an untouched /etc/hosts is not needlessly rewritten.
               if [[ -f /etc/hosts ]]; then
-                if [[ -n "$hostsOriginal" ]]; then
-                  printf '%s\n' "$hostsOriginal" > /etc/hosts
-                else
-                  : > /etc/hosts
+                hostsRaw="$(< /etc/hosts)"
+                if [[ "$hostsOriginal" != "$hostsRaw" ]]; then
+                  if [[ -n "$hostsOriginal" ]]; then
+                    printf '%s\n' "$hostsOriginal" > /etc/hosts
+                  else
+                    : > /etc/hosts
+                  fi
                 fi
               fi
             ''
